@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from query import send_query_to_gemini
+from query import send_query_to_openai
 
 app = Flask(__name__)
 cors = CORS(app, origins='*')
@@ -16,7 +16,7 @@ def test():
 @app.route("/plan_trip", methods=["POST"])
 def plan_trip():
     data = request.get_json()
-    result = send_query_to_gemini(data)
+    result = send_query_to_openai(data)
     # starting_location = data.get("startingLocation")
     # ending_location = data.get("endingLocation")
     # middle_locations = data.get("middleLocations", []) 
@@ -29,8 +29,6 @@ def plan_trip():
     print("RESULT:", result)
 
     return result
-
-
 
 if __name__ == "__main__":
     app.run(debug=True)

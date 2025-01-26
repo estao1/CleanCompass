@@ -4,6 +4,10 @@ import axios from "axios";
 import { buildMultiLegRoute } from "../static/scripts/map";
 import "../styles/styles.css";
 
+import EchoBeach from "/assets/EchoBeach.png";
+import GreenCities from "/assets/GreenCities.jpg";
+import EcoResorts from "/assets/EcoResorts.jpg";
+
 class QueryPage extends Component {
   constructor(props) {
     super(props);
@@ -77,6 +81,8 @@ class QueryPage extends Component {
 
       console.log("Response from server:", response.data);
 
+      const { stops, activities } = response.data;
+
       if (window.google) {
         // 1) Create a Google Map instance
         const googleMap = new window.google.maps.Map(
@@ -89,7 +95,7 @@ class QueryPage extends Component {
         document.getElementById("map").style.display = "block";
         document.getElementById("modal-button").style.display = "block";
 
-        const style = document.createElement('style');
+        const style = document.createElement("style");
         style.innerHTML = `
           .adp-placemark {
             display: none !important;
@@ -120,10 +126,10 @@ class QueryPage extends Component {
 
         `;
 
-  document.head.appendChild(style);
+        document.head.appendChild(style);
 
         // 2) Build your stops array
-        const stops = response.data;
+
         // 3) Call buildMultiLegRoute directly!
         buildMultiLegRoute(
           googleMap,
@@ -139,7 +145,7 @@ class QueryPage extends Component {
       }
 
       // Store Flask's response in state so we can show it in render()
-      this.setState({ serverResponse: response.data });
+      this.setState({ serverResponse: { stops, activities } });
     } catch (error) {
       console.error("Error submitting form:", error);
     }
@@ -165,8 +171,12 @@ class QueryPage extends Component {
           style={{ backgroundColor: "#198754" }}
         >
           <div className="container">
-            <a className="navbar-brand fw-bold" href="#">
-              Green For Nature
+            <a
+              className="navbar-brand fw-bold d-flex align-items-center"
+              href="#"
+            >
+              <i className="bi bi-compass me-2"></i>
+              CleanCompass
             </a>
             <button
               className="navbar-toggler"
@@ -351,43 +361,6 @@ class QueryPage extends Component {
                 </div>
               </div>
             </div>
-            {/* Triangle Graph Selector */}
-            <div className="mb-3">
-              <label htmlFor="graphSelector" className="form-label">
-                Preferences: Carbon Emission vs. Time/Distance vs. Cost
-              </label>
-              <div id="graphSelector" className="border p-3 text-center">
-                Triangle Graph Selector Placeholder
-              </div>
-            </div>
-            {/* AI-Generated Tourist Destinations and Activities */}
-            <div className="mb-3">
-              <label htmlFor="aiSuggestions" className="form-label">
-                AI-Generated Tourist Destinations and Activities
-              </label>
-              <textarea
-                className="form-control"
-                id="aiSuggestions"
-                rows="3"
-                placeholder="AI suggestions will appear here..."
-                readOnly
-              ></textarea>
-            </div>
-            {/* Additional Requests Text Box */}
-            <div className="mb-3">
-              <label htmlFor="additionalRequests" className="form-label">
-                Additional Requests for AI
-              </label>
-              <textarea
-                className="form-control"
-                id="additionalRequests"
-                name="additionalRequests"
-                rows="3"
-                placeholder="Enter any additional requests..."
-                value={this.state.additionalRequests}
-                onChange={this.handleChange}
-              ></textarea>
-            </div>
             {/* Submit Button */}
             <div className="d-grid">
               <button
@@ -398,14 +371,85 @@ class QueryPage extends Component {
                 Generate Travel Plan
               </button>
             </div>
+            {/* Add a section to display the stops and activities */}
+            {serverResponse && (
+              <div className="mt-5">
+                <h2 className="text-center mb-4">Generated Travel Plan</h2>
+                <div className="card shadow p-4 mb-5 bg-light rounded">
+                  {/* Stops Section */}
+                  <div className="mb-4">
+                    <h4 className="text-success mb-3">
+                      <i className="bi bi-map-fill me-2"></i>Stops
+                    </h4>
+                    <ul className="list-group">
+                      {serverResponse.stops.map((stop, index) => (
+                        <li
+                          key={index}
+                          className="list-group-item d-flex justify-content-between align-items-center border-0 mb-2 shadow-sm rounded"
+                          style={{
+                            backgroundColor: "#f9f9f9",
+                            padding: "15px",
+                          }}
+                        >
+                          <div>
+                            <strong>{stop.location}</strong>
+                          </div>
+                          {stop.mode && (
+                            <span className="badge bg-primary text-white rounded-pill px-3 py-2">
+                              {stop.mode}
+                            </span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  {/* Activities Section */}
+                  <div className="mb-4">
+                    <h4 className="text-info mb-3">
+                      <i className="bi bi-geo-alt me-2"></i>Activities
+                    </h4>
+                    <ul className="list-group">
+                      {Object.entries(serverResponse.activities).map(
+                        ([location, activities], index) => (
+                          <li
+                            key={index}
+                            className="list-group-item border-0 mb-2 shadow-sm rounded"
+                            style={{
+                              backgroundColor: "#f4f8fc",
+                              padding: "15px",
+                            }}
+                          >
+                            <div>
+                              <strong>{location}:</strong>
+                            </div>
+                            <ul className="mt-2">
+                              {Array.isArray(activities) ? (
+                                activities.map((activity, idx) => (
+                                  <li key={idx} className="text-muted">
+                                    {activity}
+                                  </li>
+                                ))
+                              ) : (
+                                <li className="text-muted">{activities}</li>
+                              )}
+                            </ul>
+                          </li>
+                        )
+                      )}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+            {/* Existing map and panel sections */}
           </form>
           {/* Map Placeholder Section */}
           <div className="mt-5">
             {/* Map and Info Panel */}
             <div
-                id="map"
-                className="border mt-4"
-                style={{height: "500px", width: "100%", display: "none"}}
+              id="map"
+              className="border mt-4"
+              style={{ height: "500px", width: "100%", display: "none" }}
             >
               {/* Map Placeholder */}
               Map will be displayed here
@@ -413,23 +457,24 @@ class QueryPage extends Component {
             <div>
               {/* Button to trigger the modal */}
               <button
-                  type="button"
-                  className="btn btn-primary mt-3"
-                  data-bs-toggle="modal"
-                  data-bs-target="#exampleModal"
-                  style={{display: "none"}}
-                  id="modal-button"
+                type="button"
+                className="btn btn-success mt-3"
+                data-bs-toggle="modal"
+                data-bs-target="#exampleModal"
+                style={{ display: "none" }}
+                onMouseDown={(e) => e.preventDefault()}
+                id="modal-button"
               >
-                Show Modal
+                Show Directions
               </button>
 
               {/* Modal */}
               <div
-                  className="modal fade"
-                  id="exampleModal"
-                  tabIndex="-1"
-                  aria-labelledby="exampleModalLabel"
-                  aria-hidden="true"
+                className="modal fade"
+                id="exampleModal"
+                tabIndex="-1"
+                aria-labelledby="exampleModalLabel"
+                aria-hidden="true"
               >
                 <div className="modal-dialog">
                   <div className="modal-content">
@@ -438,18 +483,18 @@ class QueryPage extends Component {
                         Directions
                       </h5>
                       <button
-                          type="button"
-                          className="btn-close"
-                          data-bs-dismiss="modal"
-                          aria-label="Close"
+                        type="button"
+                        className="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
                       ></button>
                     </div>
                     <div className="modal-body" id="panel"></div>
                     <div className="modal-footer">
                       <button
-                          type="button"
-                          className="btn btn-secondary"
-                          data-bs-dismiss="modal"
+                        type="button"
+                        className="btn btn-secondary"
+                        data-bs-dismiss="modal"
                       >
                         Close
                       </button>
@@ -458,62 +503,83 @@ class QueryPage extends Component {
                 </div>
               </div>
             </div>
-            <div>
-            </div>
+            <div></div>
           </div>
           {/* Trending Section */}
           <div className="container">
             <h2 className="text-center mb-4">Trending Destinations</h2>
             <div className="row">
               {/* Card 1 */}
+
               <div className="col-md-4">
-                <div className="card">
-                  <img
-                      src="https://via.placeholder.com/300x200"
+                <a
+                  href="https://curiositysavestravel.com/22-sustainable-beach-tips-to-plan-an-eco-friendly-beach-trip/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <div className="card">
+                    <img
+                      src={EchoBeach}
                       className="card-img-top"
                       alt="Destination 1"
-                  />
-                  <div className="card-body">
-                    <h5 className="card-title">Eco-Friendly Beaches</h5>
-                    <p className="card-text">
-                      Explore the most sustainable and eco-friendly beaches in
-                      the world.
-                    </p>
+                    />
+
+                    <div className="card-body">
+                      <h5 className="card-title">Eco-Friendly Beaches</h5>
+
+                      <p className="card-text">
+                        Explore the most sustainable and eco-friendly beaches in
+                        the world.
+                      </p>
+                    </div>
                   </div>
-                </div>
+                </a>
               </div>
+
               {/* Card 2 */}
               <div className="col-md-4">
-                <div className="card">
-                  <img
-                      src="https://via.placeholder.com/300x200"
+                <a
+                  href="https://unity.edu/articles/greenest-cities-in-the-world/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <div className="card">
+                    <img
+                      src={GreenCities}
                       className="card-img-top"
                       alt="Destination 2"
-                  />
-                  <div className="card-body">
-                  <h5 className="card-title">Green Cities</h5>
-                    <p className="card-text">
-                      Visit cities that prioritize sustainability and green
-                      living.
-                    </p>
+                    />
+                    <div className="card-body">
+                      <h5 className="card-title">Green Cities</h5>
+                      <p className="card-text">
+                        Visit cities that prioritize sustainability and green
+                        living.
+                      </p>
+                    </div>
                   </div>
-                </div>
+                </a>
               </div>
               {/* Card 3 */}
               <div className="col-md-4">
-                <div className="card">
-                  <img
-                    src="https://via.placeholder.com/300x200"
-                    className="card-img-top"
-                    alt="Destination 3"
-                  />
-                  <div className="card-body">
-                    <h5 className="card-title">Eco Resorts</h5>
-                    <p className="card-text">
-                      Discover luxurious resorts committed to sustainability.
-                    </p>
+                <a
+                  href="https://blog.remoovit.com/2022/07/06/top-10-eco-friendly-resorts-in-the-world/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <div className="card">
+                    <img
+                      src={EcoResorts}
+                      className="card-img-top"
+                      alt="Destination 3"
+                    />
+                    <div className="card-body">
+                      <h5 className="card-title">Eco Resorts</h5>
+                      <p className="card-text">
+                        Discover luxurious resorts committed to sustainability.
+                      </p>
+                    </div>
                   </div>
-                </div>
+                </a>
               </div>
             </div>
           </div>
@@ -524,7 +590,7 @@ class QueryPage extends Component {
             <div className="row">
               {/* Website Title */}
               <div className="col-md-4 justify-content-center">
-                <h1 className="website-title">Green For Nature</h1>
+                <h1 className="website-title">CleanCompass</h1>
               </div>
               {/* Social Media */}
               <div className="col-md-4 mb-4 mt-1">
@@ -551,12 +617,22 @@ class QueryPage extends Component {
                     </a>
                   </li>
                   <li>
-                    <a href="#github" className="footer-link">
+                    <a
+                      href="https://github.com/estao1/CleanCompass"
+                      className="footer-link"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       GitHub
                     </a>
                   </li>
                   <li>
-                    <a href="#devpost" className="footer-link">
+                    <a
+                      href="https://devpost.com/software/865319/joins/wVgnSeKMYOhVnKKW6oBYXQ"
+                      className="footer-link"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       Devpost
                     </a>
                   </li>
@@ -564,7 +640,7 @@ class QueryPage extends Component {
               </div>
             </div>
             <p className="mt-5">
-              &copy; 2025 Green For Nature. All rights reserved.
+              &copy; 2025 CleanCompass. All rights reserved.
             </p>
           </div>
         </footer>

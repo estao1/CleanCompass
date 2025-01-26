@@ -1,7 +1,7 @@
 import json
-from gemini import process_gemini_query
+from ai_api import process_openai_query
 
-def send_query_to_gemini(data):
+def send_query_to_openai(data):
     """
     Simulates sending a query collected from the frontend to the Gemini API.
     """
@@ -11,9 +11,9 @@ def send_query_to_gemini(data):
         "middle_locations": data.get("middleLocations", []),
         "fixed_order": data.get("fixOrder"),
         "preferences": {
-            "carbon_emissions": 1,
-            "time": 0,
-            "cost": 0,
+            "carbon_emissions": 0.5,
+            "time": 0.25,
+            "cost": 0.25,
         },
         "travel_dates": {
             "start_date": data.get("startDate"),
@@ -24,7 +24,7 @@ def send_query_to_gemini(data):
 
     # Send the query and process the response
     try:
-        response = process_gemini_query(query_data)
+        response = process_openai_query(query_data)
         result = json.dumps(response, indent=2)
         # Format the response for readability
         print("Returned Response:", result)

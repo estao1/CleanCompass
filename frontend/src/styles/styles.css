@@ -1,6 +1,6 @@
 /* Import the Lora font from Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&display=swap");
 
 /* Apply the Lora font globally to the body
 body {
@@ -11,8 +11,8 @@ body {
 } */
 
 /* Style for all headings to use the Lora font */
-h1{
-  font-family: 'Merriweather', serif;
+h1 {
+  font-family: "Merriweather", serif;
   font-weight: 700; /* You can adjust the font weight as needed */
 }
 
@@ -26,7 +26,7 @@ h1 {
 
 /* Style for buttons */
 button {
-  font-family: 'Lora', serif;
+  font-family: "Lora", serif;
   font-size: 1rem;
   font-weight: 400;
   color: rgb(160, 24, 24);
@@ -42,76 +42,90 @@ button:hover {
 }
 
 .website-title {
-    color: #198754; /* Green color */
-    font-size: 2rem; /* Larger font size */
-    font-weight: bold; /* Bold text */
-    margin: 0; /* Remove default margin */
-  }
+  color: #198754; /* Green color */
+  font-size: 2rem; /* Larger font size */
+  font-weight: bold; /* Bold text */
+  margin: 0; /* Remove default margin */
+}
 
 /* Footer Styles */
 .custom-footer {
-    padding: 1rem 1rem; /* Increased padding */
-    min-height: 300px; /* Set a larger minimum height */
-    display: flex;
-    align-items: flex-end;
-    background-color: #f8f9fa; /* Light background color */
-    border-top: 1px solid #dee2e6; /* Border at the top */
-  }
-  
-  .custom-footer h5 {
-    font-size: 1.25rem; /* Slightly larger headings */
-    margin-bottom: 1rem;
-    color: #333;
-  }
-  
-  .custom-footer ul {
-    padding: 0;
-    list-style: none;
-  }
-  
-  .custom-footer .footer-link {
-    color: #198754; /* Green link color */
-    text-decoration: none;
-  }
-  
-  .custom-footer .footer-link:hover {
-    text-decoration: underline; /* Underline on hover */
-  }
-  
-  .custom-footer .footer-social {
-    font-size: 1.5rem;
-    color: #333; /* Neutral color */
-  }
-  
-  .custom-footer .footer-social:hover {
-    color: #198754; /* Highlight on hover */
-  }
-  
-  /* Center text on smaller screens */
-  .custom-footer .text-center p {
-    margin: 0;
-  }
-  
-  
-  .card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-  }
-  
-  .card:hover {
-    transform: scale(1.03);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-  }
-  
-  .card:hover .card-title {
-    color: #06c409; /* Example green color for hover effect */
-  }
+  padding: 1rem 1rem; /* Increased padding */
+  min-height: 300px; /* Set a larger minimum height */
+  display: flex;
+  align-items: flex-end;
+  background-color: #f8f9fa; /* Light background color */
+  border-top: 1px solid #dee2e6; /* Border at the top */
+}
 
-  .btn-success {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-  
-  .btn-success:hover {
-    transform: scale(1.05); /* Slightly enlarge the button */
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Add a shadow effect */
-    background-color: #28a745; /* Optional: Slightly darken the green */
-  }
+.custom-footer h5 {
+  font-size: 1.25rem; /* Slightly larger headings */
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.custom-footer ul {
+  padding: 0;
+  list-style: none;
+}
+
+.custom-footer .footer-link {
+  color: #198754; /* Green link color */
+  text-decoration: none;
+}
+
+.custom-footer .footer-link:hover {
+  text-decoration: underline; /* Underline on hover */
+}
+
+.custom-footer .footer-social {
+  font-size: 1.5rem;
+  color: #333; /* Neutral color */
+}
+
+.custom-footer .footer-social:hover {
+  color: #198754; /* Highlight on hover */
+}
+
+/* Center text on smaller screens */
+.custom-footer .text-center p {
+  margin: 0;
+}
+
+.card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: scale(1.03);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.card:hover .card-title {
+  color: #06c409; /* Example green color for hover effect */
+}
+
+.btn-success {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-success:hover {
+  transform: scale(1.05); /* Slightly enlarge the button */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Add a shadow effect */
+  background-color: #28a745; /* Optional: Slightly darken the green */
+}
+
+a {
+  color: inherit; /* Use the color of the parent container */
+  text-decoration: none; /* Remove underline */
+}
+
+a:visited {
+  color: inherit; /* Ensure visited links match the parent color */
+  text-decoration: none; /* Ensure visited links don't have underline */
+}
+
+a:hover {
+  color: #06c409; /* Ensure visited links match the parent color */
+  text-decoration: none; /* Ensure visited links don't have underline */
+}
