@@ -93,3 +93,25 @@ button:hover {
   }
   
   
+  .card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  .card:hover .card-title {
+    color: #06c409; /* Example green color for hover effect */
+  }
+
+  .btn-success {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .btn-success:hover {
+    transform: scale(1.05); /* Slightly enlarge the button */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Add a shadow effect */
+    background-color: #28a745; /* Optional: Slightly darken the green */
+  }

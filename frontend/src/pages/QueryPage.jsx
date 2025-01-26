@@ -41,11 +41,43 @@ class QueryPage extends Component {
       return { middleLocations: updatedLocations };
     });
   };
-  
+
+  componentDidMount() {
+    // Call plotRoutes after the component is mounted
+    if (window.google) {
+      // 1) Create a Google Map instance
+      const googleMap = new window.google.maps.Map(
+        document.getElementById("map"),
+        {
+          center: { lat: 39.5, lng: -98.35 },
+          zoom: 4,
+        }
+      );
+
+      // 2) Build your stops array
+      const stops = [
+        { location: "Austin, TX", mode: "DRIVING" },
+        { location: "Dallas, TX", mode: "FLIGHT" },
+        { location: "Los Angeles, CA", mode: "DRIVING" },
+      ];
+
+      // 3) Call buildMultiLegRoute directly!
+      buildMultiLegRoute(
+        googleMap,
+        document.getElementById("panel"),
+        stops,
+        0.5 // alpha factor
+      )
+        .then(() => console.log("Routes built!"))
+        .catch((err) => console.error(err));
+    } else {
+      console.error("Google Maps not loaded yet.");
+    }
+  }
 
   handleChange = (event) => {
     const { name, type, checked, value } = event.target;
-
+  
     if (type === "checkbox") {
       this.setState({ [name]: checked });
     } else {
@@ -80,34 +112,6 @@ class QueryPage extends Component {
 
       console.log("Response from server:", response.data);
 
-      if (window.google) {
-        // 1) Create a Google Map instance
-        const googleMap = new window.google.maps.Map(
-          document.getElementById("map"),
-          {
-            center: { lat: 39.5, lng: -98.35 },
-            zoom: 4,
-          }
-        );
-
-        document.getElementById("map").style.display = "block";
-  
-        // 2) Build your stops array
-        const stops = response.data;
-  
-        // 3) Call buildMultiLegRoute directly!
-        buildMultiLegRoute(
-          googleMap,
-          document.getElementById("panel"),
-          stops,
-          0.5 // alpha factor
-        )
-          .then(() => console.log("Routes built!"))
-          .catch((err) => console.error(err));
-      } else {
-        console.error("Google Maps not loaded yet.");
-      }
-
       // Store Flask's response in state so we can show it in render()
       this.setState({ serverResponse: response.data });
     } catch (error) {
@@ -116,7 +120,7 @@ class QueryPage extends Component {
   };
 
   render() {
-    const {
+    const { 
       middleLocations,
       startingLocation,
       endingLocation,
@@ -171,137 +175,151 @@ class QueryPage extends Component {
           </div>
         </nav>
         {/* Main Content */}
-        <div className="container">
-          <h1 className="custom-header text-center mb-4 mt-3">
+        <div className="container" style={{ width: "65%" }}>
+        <h1 className="custom-header text-center mb-5 mt-5">
             Plan Your Sustainable Trip
           </h1>
           <form method="POST" onSubmit={this.handleSubmit}>
-            {/* Starting Location Input */}
-            <div className="mb-3">
-              <label htmlFor="startingLocationInput" className="form-label">
-                Starting Location
-              </label>
-              <input
-                type="text"
-                className="form-control"
-                id="startingLocationInput"
-                name="startingLocation"
-                placeholder="Enter your starting location"
-                value={this.state.startingLocation}
-                onChange={this.handleChange}
-              />
-            </div>
-            {/* Middle Locations */}
-            {middleLocations.map((location, index) => (
-              <div key={index} className="mb-3 d-flex align-items-center">
-                <label
-                  htmlFor={`middleLocation${index}`}
-                  className="form-label me-2"
-                >
-                  Middle Location {index + 1}:
-                </label>
-                <input
-                  type="text"
-                  className="form-control me-2"
-                  id={`middleLocation${index}`}
-                  name="middleLocation[]"
-                  placeholder="Enter middle location"
-                  value={location}
-                  onChange={(e) => this.handleMiddleLocationChange(index, e.target.value)}
-                />
-                <button
-                  type="button"
-                  className="btn btn-danger btn-sm"
-                  onClick={() => this.handleRemoveMiddleLocation(index)}
-                >
-                  -
-                </button>
+          <div className="row">
+              {/* Left Column */}
+              <div className="col-md-6">
+                {/* Starting Location Input */}
+                <div className="mb-3">
+                  <label htmlFor="startingLocationInput" className="form-label">
+                    Starting Location
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="startingLocationInput"
+                    name="startingLocation"
+                    style={{ width: "47.5vw" }}
+                    placeholder="Enter your starting location"
+                    value={this.state.startingLocation}
+                    onChange={this.handleChange}
+                  />
+                </div>
+
+                {/* Ending Location Input */}
+                <div className="mb-3">
+                  <label htmlFor="endingLocationInput" className="form-label">
+                    Ending Location
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="endingLocationInput"
+                    name="endingLocation"
+                    style={{ width: "47.5vw" }}
+                    placeholder="Enter your ending location"
+                    value={this.state.endingLocation}
+                    onChange={this.handleChange}
+                  />
+                </div>
+
+                {/* Middle Locations */}
+                {middleLocations.map((location, index) => (
+                  <div key={index} className="mb-3">
+                    <label
+                      htmlFor={`middleLocation${index}`}
+                      className="form-label"
+                    >
+                      Middle Location {index + 1}:
+                    </label>
+                    <div style={{ display: "flex", gap: "1rem" }}>
+                      <input
+                        type="text"
+                        className="form-control"
+                        id={`middleLocation${index}`}
+                        name="middleLocation[]"
+                        placeholder="Enter middle location"
+                        value={location}
+                        onChange={(e) =>
+                          this.handleMiddleLocationChange(index, e.target.value)
+                        }
+                        style={{ minWidth: "29vw" }}
+                      />
+                      <button
+                        type="button"
+                        className="btn btn-danger btn-sm"
+                        onClick={(e) => {
+                          this.handleRemoveMiddleLocation(index);
+                          e.target.blur();
+                        }}
+                      >
+                        -
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                {/* Add Middle Location Button */}
+                <div className="mb-3">
+                  <button
+                    type="button"
+                    className="btn btn-success btn-sm"
+                    onClick={(e) => {
+                      this.handleAddMiddleLocation();
+                      e.target.blur();
+                    }}
+                  >
+                    + Add Middle Location
+                  </button>
+                </div>
               </div>
-            ))}
-            {/* Add Middle Location Button */}
-            <div className="mb-3">
-              <button
-                type="button"
-                className="btn btn-success btn-sm"
-                onClick={this.handleAddMiddleLocation}
-              >
-                + Add Middle Location
-              </button>
-            </div>
-            {/* Ending Location Input */}
-            <div className="mb-3">
-              <label htmlFor="endingLocationInput" className="form-label">
-                Ending Location
-              </label>
-              <input
-                type="text"
-                className="form-control"
-                id="endingLocationInput"
-                name="endingLocation"
-                value={this.state.endingLocation}
-                onChange={this.handleChange}
-                placeholder="Enter your ending location"
-              />
-            </div>
-            {/* Travel Date Input */}
-            <div className="mb-3">
-              <div
-                style={{ display: "flex", gap: "1rem", alignItems: "center" }}
-              >
-                {/* Start Date Picker */}
-                <div>
+
+              {/* Right Column */}
+              <div className="col-md-6 d-flex flex-column align-items-end">
+                {/* Travel Date Input */}
+                <div className="mb-3">
                   <label htmlFor="startDate" className="form-label">
                     Start Date
                   </label>
-                  <div className="input-group">
-                    <input
-                      type="date"
-                      id="startDate"
-                      name="startDate"
-                      value={this.state.startDate}
-                      onChange={this.handleChange}
-                      className="form-control"
-                      style={{ minWidth: "150px" }}
-                      min="2023-01-01"
-                      max="2030-12-31"
-                    />
-                  </div>
+                  <input
+                    type="date"
+                    id="startDate"
+                    name="startDate"
+                    className="form-control"
+                    style={{ width: "13.99999999vw" }}
+                    value={this.state.startDate}
+                    onChange={this.handleChange}
+                    min="2023-01-01"
+                    max="2030-12-31"
+                  />
                 </div>
-                {/* End Date Picker */}
-                <div>
+
+                <div className="mb-3">
                   <label htmlFor="endDate" className="form-label">
                     End Date
                   </label>
-                  <div className="input-group">
+                  <input
+                    type="date"
+                    id="endDate"
+                    name="endDate"
+                    className="form-control"
+                    style={{ width: "13.99999999vw" }}
+                    value={this.state.endDate}
+                    onChange={this.handleChange}
+                    min="2023-01-01"
+                    max="2030-12-31"
+                  />
+                </div>
+
+                {/* Fix Order Checkbox */}
+                <div className="input-container mb-5">
+                  <div className="form-check">
                     <input
-                      type="date"
-                      id="endDate"
-                      name="endDate"
-                      value={this.state.endDate}
+                      type="checkbox"
+                      className="form-check-input"
+                      id="fixOrderCheckbox"
+                      name="fixOrder"
+                      value={this.state.fixOrder}
                       onChange={this.handleChange}
-                      className="form-control"
-                      style={{ minWidth: "150px" }}
-                      min="2023-01-01"
-                      max="2030-12-31"
                     />
+                    <label className="form-check-label" htmlFor="fixOrderCheckbox">
+                      Fixed Order
+                    </label>
                   </div>
                 </div>
-              </div>
-            </div>
-            {/* Fix Order Checkbox */}
-            <div className="input-container mb-3">
-              <div className="form-check">
-                <input
-                  type="checkbox"
-                  className="form-check-input"
-                  id="fixOrderCheckbox"
-                  name="fixOrder"
-                  value={this.state.fixOrder}
-                  onChange={this.handleChange}
-                />
-                <label className="form-check-label" htmlFor="fixOrderCheckbox">
-                  Fixed Order
-                </label>
               </div>
             </div>
             {/* Triangle Graph Selector */}
@@ -343,81 +361,85 @@ class QueryPage extends Component {
             </div>
             {/* Submit Button */}
             <div className="d-grid">
-              <button type="submit" className="btn btn-primary">
+              <button
+                type="submit"
+                className="btn btn-success"
+                onMouseDown={(e) => e.preventDefault()}
+              >
                 Generate Travel Plan
               </button>
             </div>
-          </form>
-          {/* Map Placeholder Section */}
-          <div className="mt-5">
+            </form>
+            {/* Map Placeholder Section */}
+            <div className="mt-5">
             {/* Map and Info Panel */}
             <div
               id="map"
               className="border mt-4"
-              style={{ height: "300px", width: "100%", display:"none" }}
+              style={{ height: "300px", width: "100%" }}
             >
-              {/* Map Placeholder */}
-              Map will be displayed here
+                {/* Map Placeholder */}
+                Map will be displayed here
             </div>
             <div id="panel" className="mt-3">
-              {/* Directions/Info Panel Placeholder */}
-              Route info will be displayed here
+                {/* Directions/Info Panel Placeholder */}
+                Route info will be displayed here
             </div>
-          </div>
-          {/* Trending Section */}
-          <div className="container">
+            </div>
+            {/* Trending Section */}
+            <div className="container">
             <h2 className="text-center mb-4">Trending Destinations</h2>
             <div className="row">
-              {/* Card 1 */}
-              <div className="col-md-4">
+                {/* Card 1 */}
+                <div className="col-md-4">
                 <div className="card">
-                  <img
+                    <img
                     src="https://via.placeholder.com/300x200"
                     className="card-img-top"
                     alt="Destination 1"
-                  />
-                  <div className="card-body">
+                    />
+                    <div className="card-body">
                     <h5 className="card-title">Eco-Friendly Beaches</h5>
                     <p className="card-text">
-                      Explore the most sustainable and eco-friendly beaches in the world.
+                        Explore the most sustainable and eco-friendly beaches in the world.
                     </p>
-                  </div>
+                    </div>
                 </div>
-              </div>
-              {/* Card 2 */}
-              <div className="col-md-4">
+                </div>
+                {/* Card 2 */}
+                <div className="col-md-4">
                 <div className="card">
-                  <img
+                    <img
                     src="https://via.placeholder.com/300x200"
                     className="card-img-top"
                     alt="Destination 2"
-                  />
-                  <div className="card-body">
+                    />
+                    <div className="card-body">
                     <h5 className="card-title">Green Cities</h5>
                     <p className="card-text">
-                      Visit cities that prioritize sustainability and green living.
+                        Visit cities that prioritize sustainability and green living.
                     </p>
-                  </div>
+                    </div>
                 </div>
-              </div>
-              {/* Card 3 */}
-              <div className="col-md-4">
+                </div>
+                {/* Card 3 */}
+                <div className="col-md-4">
                 <div className="card">
-                  <img
+                    <img
                     src="https://via.placeholder.com/300x200"
                     className="card-img-top"
                     alt="Destination 3"
-                  />
-                  <div className="card-body">
+                    />
+                    <div className="card-body">
                     <h5 className="card-title">Eco Resorts</h5>
                     <p className="card-text">
-                      Discover luxurious resorts committed to sustainability.
+                        Discover luxurious resorts committed to sustainability.
                     </p>
-                  </div>
+                    </div>
                 </div>
-              </div>
+                </div>
             </div>
-          </div>
+            </div>
         </div>
         {/* Footer */}
         <footer className="custom-footer bg-light mt-5">
