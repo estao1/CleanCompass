@@ -173,7 +173,7 @@ class QueryPage extends Component {
           <div className="container">
             <a
               className="navbar-brand fw-bold d-flex align-items-center"
-              href="#"
+              href="/"
             >
               <i className="bi bi-compass me-2"></i>
               CleanCompass
