@@ -41,39 +41,7 @@ class QueryPage extends Component {
       return { middleLocations: updatedLocations };
     });
   };
-
-  componentDidMount() {
-    // Call plotRoutes after the component is mounted
-    if (window.google) {
-      // 1) Create a Google Map instance
-      const googleMap = new window.google.maps.Map(
-        document.getElementById("map"),
-        {
-          center: { lat: 39.5, lng: -98.35 },
-          zoom: 4,
-        }
-      );
-
-      // 2) Build your stops array
-      const stops = [
-        { location: "Austin, TX", mode: "DRIVING" },
-        { location: "Dallas, TX", mode: "FLIGHT" },
-        { location: "Los Angeles, CA", mode: "DRIVING" },
-      ];
-
-      // 3) Call buildMultiLegRoute directly!
-      buildMultiLegRoute(
-        googleMap,
-        document.getElementById("panel"),
-        stops,
-        0.5 // alpha factor
-      )
-        .then(() => console.log("Routes built!"))
-        .catch((err) => console.error(err));
-    } else {
-      console.error("Google Maps not loaded yet.");
-    }
-  }
+  
 
   handleChange = (event) => {
     const { name, type, checked, value } = event.target;
@@ -111,6 +79,34 @@ class QueryPage extends Component {
       });
 
       console.log("Response from server:", response.data);
+
+      if (window.google) {
+        // 1) Create a Google Map instance
+        const googleMap = new window.google.maps.Map(
+          document.getElementById("map"),
+          {
+            center: { lat: 39.5, lng: -98.35 },
+            zoom: 4,
+          }
+        );
+
+        document.getElementById("map").style.display = "block";
+  
+        // 2) Build your stops array
+        const stops = response.data;
+  
+        // 3) Call buildMultiLegRoute directly!
+        buildMultiLegRoute(
+          googleMap,
+          document.getElementById("panel"),
+          stops,
+          0.5 // alpha factor
+        )
+          .then(() => console.log("Routes built!"))
+          .catch((err) => console.error(err));
+      } else {
+        console.error("Google Maps not loaded yet.");
+      }
 
       // Store Flask's response in state so we can show it in render()
       this.setState({ serverResponse: response.data });
@@ -358,7 +354,7 @@ class QueryPage extends Component {
             <div
               id="map"
               className="border mt-4"
-              style={{ height: "300px", width: "100%" }}
+              style={{ height: "300px", width: "100%", display:"none" }}
             >
               {/* Map Placeholder */}
               Map will be displayed here

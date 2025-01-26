@@ -84,7 +84,7 @@ def process_gemini_query(data):
 
     # Start a chat session
     chat_session = genai.GenerativeModel(
-        model_name="gemini-1.5-pro",
+        model_name="gemini-1.5-flash",
         generation_config=generation_config,
     ).start_chat(
         history=[
