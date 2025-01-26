@@ -79,32 +79,56 @@ class QueryPage extends Component {
 
       if (window.google) {
         // 1) Create a Google Map instance
-
         const googleMap = new window.google.maps.Map(
           document.getElementById("map"),
-
           {
             center: { lat: 39.5, lng: -98.35 },
-
             zoom: 4,
           }
         );
-
         document.getElementById("map").style.display = "block";
+        document.getElementById("modal-button").style.display = "block";
+
+        const style = document.createElement('style');
+        style.innerHTML = `
+          .adp-placemark {
+            display: none !important;
+          }
+          
+          .segment-container {
+            margin-bottom: 15px;
+          }
+          
+          .segment-heading {
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-top: 10px;
+            margin-bottom: 5px;
+          }
+          
+          .segment-details {
+            font-size: 0.9em;
+            color: #555;
+            margin-bottom: 10px;
+          }
+          
+          .segment-distance,
+          .segment-duration {
+            display: inline-block;
+            margin-right: 10px;
+          }
+
+        `;
+
+  document.head.appendChild(style);
 
         // 2) Build your stops array
-
         const stops = response.data;
-
         // 3) Call buildMultiLegRoute directly!
-
         buildMultiLegRoute(
           googleMap,
-
           document.getElementById("panel"),
-
           stops,
-
           0.5 // alpha factor
         )
           .then(() => console.log("Routes built!"))
@@ -379,16 +403,62 @@ class QueryPage extends Component {
           <div className="mt-5">
             {/* Map and Info Panel */}
             <div
-              id="map"
-              className="border mt-4"
-              style={{ height: "300px", width: "100%" }}
+                id="map"
+                className="border mt-4"
+                style={{height: "500px", width: "100%", display: "none"}}
             >
               {/* Map Placeholder */}
               Map will be displayed here
             </div>
-            <div id="panel" className="mt-3">
-              {/* Directions/Info Panel Placeholder */}
-              Route info will be displayed here
+            <div>
+              {/* Button to trigger the modal */}
+              <button
+                  type="button"
+                  className="btn btn-primary mt-3"
+                  data-bs-toggle="modal"
+                  data-bs-target="#exampleModal"
+                  style={{display: "none"}}
+                  id="modal-button"
+              >
+                Show Modal
+              </button>
+
+              {/* Modal */}
+              <div
+                  className="modal fade"
+                  id="exampleModal"
+                  tabIndex="-1"
+                  aria-labelledby="exampleModalLabel"
+                  aria-hidden="true"
+              >
+                <div className="modal-dialog">
+                  <div className="modal-content">
+                    <div className="modal-header">
+                      <h5 className="modal-title" id="exampleModalLabel">
+                        Directions
+                      </h5>
+                      <button
+                          type="button"
+                          className="btn-close"
+                          data-bs-dismiss="modal"
+                          aria-label="Close"
+                      ></button>
+                    </div>
+                    <div className="modal-body" id="panel"></div>
+                    <div className="modal-footer">
+                      <button
+                          type="button"
+                          className="btn btn-secondary"
+                          data-bs-dismiss="modal"
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div>
             </div>
           </div>
           {/* Trending Section */}
@@ -399,9 +469,9 @@ class QueryPage extends Component {
               <div className="col-md-4">
                 <div className="card">
                   <img
-                    src="https://via.placeholder.com/300x200"
-                    className="card-img-top"
-                    alt="Destination 1"
+                      src="https://via.placeholder.com/300x200"
+                      className="card-img-top"
+                      alt="Destination 1"
                   />
                   <div className="card-body">
                     <h5 className="card-title">Eco-Friendly Beaches</h5>
@@ -416,12 +486,12 @@ class QueryPage extends Component {
               <div className="col-md-4">
                 <div className="card">
                   <img
-                    src="https://via.placeholder.com/300x200"
-                    className="card-img-top"
-                    alt="Destination 2"
+                      src="https://via.placeholder.com/300x200"
+                      className="card-img-top"
+                      alt="Destination 2"
                   />
                   <div className="card-body">
-                    <h5 className="card-title">Green Cities</h5>
+                  <h5 className="card-title">Green Cities</h5>
                     <p className="card-text">
                       Visit cities that prioritize sustainability and green
                       living.

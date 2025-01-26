@@ -6,7 +6,7 @@
  * @param {number} alpha                   0..1 controlling how "flat" flight arcs appear. (0=great-circle, 1=flat)
  */
 export async function buildMultiLegRoute(map, panelEl, stops, alpha = 0.5) {
-  // === Add the modeEmojis here ===
+  // Mode emojis for displaying in segment headings and info windows
   const modeEmojis = {
     DRIVING: "🚗",
     WALKING: "🚶",
@@ -15,75 +15,75 @@ export async function buildMultiLegRoute(map, panelEl, stops, alpha = 0.5) {
     FLIGHT: "✈️",
   };
 
-  // 1) We'll need a Geocoder + DirectionsService
+  // Initialize required Google Maps services
   const geocoder = new google.maps.Geocoder();
   const directionsService = new google.maps.DirectionsService();
 
-  // 2) Arrays to keep track of what we draw (for clearing if needed)
+  // Arrays to track markers, polylines, and directions renderers
   const letterMarkers = [];
   const polylines = [];
   const directionsRenderers = [];
 
-  // For labeling markers (A,B,C,...)
+  // Marker letter index (A, B, C, ...)
   let markerIndex = 0;
   const markerLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-  // Clear the panel
+  // Clear the panel for new directions
   panelEl.innerHTML = "";
 
-  // --- Utility to place a lettered marker
+  // Utility: Place a lettered marker on the map
   function placeLetterMarker(pos) {
     if (!pos) return;
     const label = markerLetters[markerIndex] || "?";
     markerIndex++;
-    const m = new google.maps.Marker({
+    const marker = new google.maps.Marker({
       position: pos,
       map: map,
       label: label,
     });
-    letterMarkers.push(m);
+    letterMarkers.push(marker);
   }
 
-  // --- Utility to run functions sequentially
+  // Utility: Run tasks sequentially
   async function runSequentially(tasks) {
     for (const fn of tasks) {
       await fn();
     }
   }
 
-  // --- STEP A: Geocode all stops
-  //     If a stop fails, we set latLng = null and skip it
+  // STEP A: Geocode all stops
   const geocodedStops = await Promise.all(
-    stops.map((s) => {
-      return new Promise((resolve) => {
-        const locationStr = (s.location || "").trim();
+    stops.map((stop) =>
+      new Promise((resolve) => {
+        const locationStr = (stop.location || "").trim();
         if (!locationStr) {
           alert("Empty location. Skipping.");
-          return resolve({ ...s, latLng: null });
+          resolve({ ...stop, latLng: null });
+          return;
         }
         geocoder.geocode({ address: locationStr }, (results, status) => {
           if (status === "OK" && results[0]) {
-            resolve({ ...s, latLng: results[0].geometry.location });
+            resolve({ ...stop, latLng: results[0].geometry.location });
           } else {
-            alert(`Could not geocode "${locationStr}". Skipping this stop.`);
-            resolve({ ...s, latLng: null });
+            alert(`Could not geocode "${locationStr}". Skipping.`);
+            resolve({ ...stop, latLng: null });
           }
         });
-      });
-    })
+      })
+    )
   );
 
-  // Place lettered markers for each valid latLng
+  // Place lettered markers for valid locations
   geocodedStops.forEach((stop) => {
     if (stop.latLng) placeLetterMarker(stop.latLng);
   });
 
-  // --- STEP B: Build segments from i..i+1
+  // STEP B: Build segments for consecutive stops
   const tasks = [];
   for (let i = 0; i < geocodedStops.length - 1; i++) {
     const origin = geocodedStops[i];
     const destination = geocodedStops[i + 1];
-    // Skip if missing latLng
+
     if (!origin.latLng || !destination.latLng) continue;
 
     if (origin.mode === "FLIGHT") {
@@ -93,11 +93,11 @@ export async function buildMultiLegRoute(map, panelEl, stops, alpha = 0.5) {
     }
   }
 
-  // Run them sequentially
+  // Run all segment tasks sequentially
   await runSequentially(tasks);
 
   /**
-   * Standard segment (driving/walking/etc.)
+   * Handle standard segments (driving, walking, transit, etc.)
    */
   async function doStandardSegment(index, origin, destination) {
     return new Promise((resolve) => {
@@ -113,36 +113,37 @@ export async function buildMultiLegRoute(map, panelEl, stops, alpha = 0.5) {
             const route = result.routes[0];
             if (!route || !route.legs.length) {
               alert(`No route found for segment ${index + 1}.`);
-              return resolve();
+              resolve();
+              return;
             }
+
             const leg = route.legs[0];
             const dist = leg.distance?.text || "";
             const dur = leg.duration?.text || "";
 
-            // 1) Create a DirectionsRenderer for the styled steps in panel
+            // Create a DirectionsRenderer
             const dr = new google.maps.DirectionsRenderer({
               preserveViewport: true,
-              suppressMarkers: true, // we do our own markers
-              // We'll hide the built-in polyline so we can do a custom one
-              polylineOptions: { strokeOpacity: 0, strokeWeight: 0 },
+              suppressMarkers: true, // Suppress default markers
+              polylineOptions: { strokeOpacity: 0, strokeWeight: 0 }, // Hide default polyline
               map: map,
             });
             dr.setDirections(result);
             directionsRenderers.push(dr);
 
-            // 2) Create a container in panel for "Segment i"
+            // Add segment heading with emoji
             const segDiv = document.createElement("div");
             segDiv.innerHTML = `<div class="segment-heading">
-              Segment ${index + 1} (${origin.mode})
+              Segment ${index + 1} (${origin.mode}): ${modeEmojis[origin.mode] || ""}
             </div>`;
             const stepsDiv = document.createElement("div");
             segDiv.appendChild(stepsDiv);
             panelEl.appendChild(segDiv);
 
-            // Let DirectionsRenderer fill stepsDiv
+            // Render steps in the stepsDiv
             dr.setPanel(stepsDiv);
 
-            // 3) Draw our own polyline so we can handle hover
+            // Draw custom polyline
             const overviewPath = route.overview_path || [];
             const customPoly = new google.maps.Polyline({
               path: overviewPath,
@@ -153,11 +154,12 @@ export async function buildMultiLegRoute(map, panelEl, stops, alpha = 0.5) {
             });
             polylines.push(customPoly);
 
-            // 4) Hover InfoWindow with distance/time
-            const contentStr = `<div style="padding:2px 5px;">
-              ${modeEmojis[origin.mode] || ""} ${dist}, ${dur}
-            </div>`;
-            const infoWindow = new google.maps.InfoWindow({ content: contentStr });
+            // Add hover info window
+            const infoWindow = new google.maps.InfoWindow({
+              content: `<div style="padding:2px 5px;">
+                ${modeEmojis[origin.mode] || ""} ${dist}, ${dur}
+              </div>`,
+            });
             customPoly.addListener("mouseover", (e) => {
               infoWindow.setPosition(e.latLng);
               infoWindow.open(map);
@@ -173,44 +175,39 @@ export async function buildMultiLegRoute(map, panelEl, stops, alpha = 0.5) {
   }
 
   /**
-   * Flight segment => "Hybrid" arc
+   * Handle flight segments with hybrid arcs
    */
   async function doFlightSegment(index, origin, destination) {
     return new Promise((resolve) => {
-      // 1) distance/time
       const distMeters = google.maps.geometry.spherical.computeDistanceBetween(
         origin.latLng,
         destination.latLng
       );
       const distKm = distMeters / 1000;
-      const flightSpeed = 800;
+      const flightSpeed = 800; // Average flight speed in km/h
       const hrs = distKm / flightSpeed;
       const mins = hrs * 60;
 
-      // 2) Build a blended arc
       const arcPath = buildHybridArcPath(origin.latLng, destination.latLng, 64, alpha);
 
-      // 3) Draw the poly
       const poly = new google.maps.Polyline({
         path: arcPath,
         strokeColor: "#4285F4",
         strokeOpacity: 0.9,
         strokeWeight: 5,
-        geodesic: false, // we don't want to warp further
+        geodesic: false,
         map: map,
       });
       polylines.push(poly);
 
-      // 4) Panel heading
       const segDiv = document.createElement("div");
       segDiv.className = "segment-heading";
       segDiv.innerHTML = `
-        Segment ${index + 1} (FLIGHT): 
+        Segment ${index + 1} (FLIGHT): ${modeEmojis["FLIGHT"] || ""}
         ~${distKm.toFixed(2)} km, ~${mins.toFixed(0)} min
       `;
       panelEl.appendChild(segDiv);
 
-      // 5) Hover InfoWindow
       const infoWin = new google.maps.InfoWindow({
         content: `<div style="padding:2px 5px;">
           ${modeEmojis["FLIGHT"] || ""} 
@@ -228,13 +225,10 @@ export async function buildMultiLegRoute(map, panelEl, stops, alpha = 0.5) {
   }
 
   /**
-   * Build a "hybrid" arc path by mixing
-   * half great-circle + half linear lat/lng
-   * (or some fraction controlled by alpha)
+   * Build a hybrid arc path
    */
-  function buildHybridArcPath(start, end, steps, alphaVal) {
+  function buildHybridArcPath(start, end, steps, alpha) {
     const path = [];
-    // Linear references
     const lat1 = start.lat();
     const lng1 = start.lng();
     const lat2 = end.lat();
@@ -242,23 +236,19 @@ export async function buildMultiLegRoute(map, panelEl, stops, alpha = 0.5) {
 
     for (let i = 0; i <= steps; i++) {
       const f = i / steps;
-      // Great-circle point
       const gcPt = google.maps.geometry.spherical.interpolate(start, end, f);
       const gcLat = gcPt.lat();
       const gcLng = gcPt.lng();
-      // Linear point
       const lLat = lat1 + f * (lat2 - lat1);
       const lLng = lng1 + f * (lng2 - lng1);
-
-      // Weighted combination
-      const finalLat = alphaVal * lLat + (1 - alphaVal) * gcLat;
-      const finalLng = alphaVal * lLng + (1 - alphaVal) * gcLng;
+      const finalLat = alpha * lLat + (1 - alpha) * gcLat;
+      const finalLng = alpha * lLng + (1 - alpha) * gcLng;
       path.push(new google.maps.LatLng(finalLat, finalLng));
     }
     return path;
   }
 
-  // Return references if you need to clear them later
+  // Return objects for cleanup if necessary
   return {
     markers: letterMarkers,
     polylines,
