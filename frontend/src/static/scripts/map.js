@@ -99,130 +99,167 @@ export async function buildMultiLegRoute(map, panelEl, stops, alpha = 0.5) {
   /**
    * Handle standard segments (driving, walking, transit, etc.)
    */
-  async function doStandardSegment(index, origin, destination) {
+async function doStandardSegment(index, origin, destination) {
     return new Promise((resolve) => {
-      directionsService.route(
-        {
-          origin: origin.latLng,
-          destination: destination.latLng,
-          travelMode: origin.mode,
-          provideRouteAlternatives: false,
-        },
-        (result, status) => {
-          if (status === "OK") {
-            const route = result.routes[0];
-            if (!route || !route.legs.length) {
-              alert(`No route found for segment ${index + 1}.`);
-              resolve();
-              return;
+        directionsService.route(
+            {
+                origin: origin.latLng,
+                destination: destination.latLng,
+                travelMode: origin.mode,
+                provideRouteAlternatives: false,
+            },
+            (result, status) => {
+                if (status === "OK") {
+                    const route = result.routes[0];
+                    if (!route || !route.legs.length) {
+                        alert(`No route found for segment ${index + 1}.`);
+                        resolve();
+                        return;
+                    }
+
+                    const leg = route.legs[0];
+                    const distMeters = leg.distance?.value || 0;
+                    const distKm = distMeters / 1000;
+                    const dur = leg.duration?.text || "";
+
+                    // Calculate carbon emissions based on travel mode
+                    let carbonEmissions = 0;
+                    const emissionFactors = {
+                        DRIVING: 0.27, // kg CO2 per vehicle-km
+                        TRANSIT: 0.089, // kg CO2 per passenger-km
+                        WALKING: 0,
+                        BICYCLING: 0,
+                    };
+
+                    if (origin.mode in emissionFactors) {
+                        carbonEmissions = distKm * emissionFactors[origin.mode];
+                    }
+
+                    // Create a DirectionsRenderer
+                    const dr = new google.maps.DirectionsRenderer({
+                        preserveViewport: true,
+                        suppressMarkers: true, // Suppress default markers
+                        polylineOptions: { strokeOpacity: 0, strokeWeight: 0 }, // Hide default polyline
+                        map: map,
+                    });
+                    dr.setDirections(result);
+                    directionsRenderers.push(dr);
+
+                    // Add segment heading with emoji and emissions
+                    const segDiv = document.createElement("div");
+                    segDiv.innerHTML = `<div class="segment-heading">
+                      Segment ${index + 1} (${origin.mode}): ${modeEmojis[origin.mode] || ""}
+                      <div style="font-weight: normal; font-size: 0.85em; margin-top: 4px; color: #5f6368;">
+                        ~${distKm.toFixed(2)} km, ${dur}
+                      </div>
+                      <div style="font-weight: normal; font-size: 0.85em; margin-top: 2px; color: #5f6368;">
+                        Estimated carbon emissions: ~${carbonEmissions.toFixed(2)} kg CO<sub>2</sub>
+                      </div>
+                    </div>`;
+                    const stepsDiv = document.createElement("div");
+                    segDiv.appendChild(stepsDiv);
+                    panelEl.appendChild(segDiv);
+
+                    // Render steps in the stepsDiv
+                    dr.setPanel(stepsDiv);
+
+                    // Draw custom polyline
+                    const overviewPath = route.overview_path || [];
+                    const customPoly = new google.maps.Polyline({
+                        path: overviewPath,
+                        strokeColor: "#4285F4",
+                        strokeWeight: 5,
+                        strokeOpacity: 0.9,
+                        map: map,
+                    });
+                    polylines.push(customPoly);
+
+                    // Add hover info window
+                    const infoWindow = new google.maps.InfoWindow({
+                        content: `<div style="padding:2px 5px;">
+                          ${modeEmojis[origin.mode] || ""} ~${distKm.toFixed(2)} km, ${dur}
+                          <br>
+                          Estimated emissions: ~${carbonEmissions.toFixed(2)} kg CO<sub>2</sub>
+                        </div>`,
+                    });
+                    customPoly.addListener("mouseover", (e) => {
+                        infoWindow.setPosition(e.latLng);
+                        infoWindow.open(map);
+                    });
+                    customPoly.addListener("mouseout", () => infoWindow.close());
+                } else {
+                    alert(`Segment ${index + 1} failed: ${status}`);
+                }
+                resolve();
             }
-
-            const leg = route.legs[0];
-            const dist = leg.distance?.text || "";
-            const dur = leg.duration?.text || "";
-
-            // Create a DirectionsRenderer
-            const dr = new google.maps.DirectionsRenderer({
-              preserveViewport: true,
-              suppressMarkers: true, // Suppress default markers
-              polylineOptions: { strokeOpacity: 0, strokeWeight: 0 }, // Hide default polyline
-              map: map,
-            });
-            dr.setDirections(result);
-            directionsRenderers.push(dr);
-
-            // Add segment heading with emoji
-            const segDiv = document.createElement("div");
-            segDiv.innerHTML = `<div class="segment-heading">
-              Segment ${index + 1} (${origin.mode}): ${modeEmojis[origin.mode] || ""}
-            </div>`;
-            const stepsDiv = document.createElement("div");
-            segDiv.appendChild(stepsDiv);
-            panelEl.appendChild(segDiv);
-
-            // Render steps in the stepsDiv
-            dr.setPanel(stepsDiv);
-
-            // Draw custom polyline
-            const overviewPath = route.overview_path || [];
-            const customPoly = new google.maps.Polyline({
-              path: overviewPath,
-              strokeColor: "#4285F4",
-              strokeWeight: 5,
-              strokeOpacity: 0.9,
-              map: map,
-            });
-            polylines.push(customPoly);
-
-            // Add hover info window
-            const infoWindow = new google.maps.InfoWindow({
-              content: `<div style="padding:2px 5px;">
-                ${modeEmojis[origin.mode] || ""} ${dist}, ${dur}
-              </div>`,
-            });
-            customPoly.addListener("mouseover", (e) => {
-              infoWindow.setPosition(e.latLng);
-              infoWindow.open(map);
-            });
-            customPoly.addListener("mouseout", () => infoWindow.close());
-          } else {
-            alert(`Segment ${index + 1} failed: ${status}`);
-          }
-          resolve();
-        }
-      );
+        );
     });
-  }
+}
+
 
   /**
    * Handle flight segments with hybrid arcs
    */
-  async function doFlightSegment(index, origin, destination) {
+  /**
+ * Handle flight segments with hybrid arcs
+ */
+async function doFlightSegment(index, origin, destination) {
     return new Promise((resolve) => {
-      const distMeters = google.maps.geometry.spherical.computeDistanceBetween(
-        origin.latLng,
-        destination.latLng
-      );
-      const distKm = distMeters / 1000;
-      const flightSpeed = 800; // Average flight speed in km/h
-      const hrs = distKm / flightSpeed;
-      const mins = hrs * 60;
+        const distMeters = google.maps.geometry.spherical.computeDistanceBetween(
+            origin.latLng,
+            destination.latLng
+        );
+        const distKm = distMeters / 1000;
+        const flightSpeed = 800; // Average flight speed in km/h
+        const hrs = distKm / flightSpeed;
+        const mins = hrs * 60;
 
-      const arcPath = buildHybridArcPath(origin.latLng, destination.latLng, 64, alpha);
+        // Calculate carbon emissions (equation based on research)
+        const emissionFactor = 0.115; // 0.115 kg CO2 per passenger-km (economy flight average)
+        const carbonEmissions = distKm * emissionFactor; // Total emissions in kg
 
-      const poly = new google.maps.Polyline({
-        path: arcPath,
-        strokeColor: "#4285F4",
-        strokeOpacity: 0.9,
-        strokeWeight: 5,
-        geodesic: false,
-        map: map,
-      });
-      polylines.push(poly);
+        const arcPath = buildHybridArcPath(origin.latLng, destination.latLng, 64, alpha);
 
-      const segDiv = document.createElement("div");
-      segDiv.className = "segment-heading";
-      segDiv.innerHTML = `
-        Segment ${index + 1} (FLIGHT): ${modeEmojis["FLIGHT"] || ""}
-        ~${distKm.toFixed(2)} km, ~${mins.toFixed(0)} min
-      `;
-      panelEl.appendChild(segDiv);
+        const poly = new google.maps.Polyline({
+            path: arcPath,
+            strokeColor: "#4285F4",
+            strokeOpacity: 0.9,
+            strokeWeight: 5,
+            geodesic: false,
+            map: map,
+        });
+        polylines.push(poly);
 
-      const infoWin = new google.maps.InfoWindow({
-        content: `<div style="padding:2px 5px;">
-          ${modeEmojis["FLIGHT"] || ""} 
-          ${distKm.toFixed(2)} km, ~${mins.toFixed(0)} min
-        </div>`,
-      });
-      poly.addListener("mouseover", (e) => {
-        infoWin.setPosition(e.latLng);
-        infoWin.open(map);
-      });
-      poly.addListener("mouseout", () => infoWin.close());
+        const segDiv = document.createElement("div");
+        segDiv.className = "segment-heading";
+        segDiv.innerHTML = `
+            Segment ${index + 1} (FLIGHT): ${modeEmojis["FLIGHT"] || ""}
+            <div style="font-weight: normal; font-size: 0.85em; margin-top: 4px; color: #5f6368;">
+                ~${distKm.toFixed(2)} km, ~${mins.toFixed(0)} min
+            </div>
+            <div style="font-weight: normal; font-size: 0.85em; margin-top: 2px; color: #5f6368;">
+                Estimated carbon emissions: ~${carbonEmissions.toFixed(2)} kg CO<sub>2</sub>
+            </div>
+        `;
+        panelEl.appendChild(segDiv);
 
-      resolve();
+        const infoWin = new google.maps.InfoWindow({
+            content: `<div style="padding:2px 5px;">
+                ${modeEmojis["FLIGHT"] || ""} 
+                ${distKm.toFixed(2)} km, ~${mins.toFixed(0)} min
+                <br>
+                Estimated emissions: ~${carbonEmissions.toFixed(2)} kg CO<sub>2</sub>
+            </div>`,
+        });
+        poly.addListener("mouseover", (e) => {
+            infoWin.setPosition(e.latLng);
+            infoWin.open(map);
+        });
+        poly.addListener("mouseout", () => infoWin.close());
+
+        resolve();
     });
-  }
+}
 
   /**
    * Build a hybrid arc path

@@ -468,6 +468,7 @@ class QueryPage extends Component {
                 Show Directions
               </button>
 
+
               {/* Modal */}
               <div
                 className="modal fade"
