@@ -1,7 +1,8 @@
 import React, { Component } from "react";
+
+import axios from "axios";
 import { buildMultiLegRoute } from "../static/scripts/map";
 import "../styles/styles.css";
-import axios from "axios";
 
 
 class QueryPage extends Component {
@@ -175,10 +176,10 @@ class QueryPage extends Component {
         </nav>
         {/* Main Content */}
         <div className="container">
-          <h1 className="custom-header text-center mb-4 mt-3">
+        <h1 className="custom-header text-center mb-4 mt-3">
             Plan Your Sustainable Trip
           </h1>
-          <form method="post">
+          <form method="POST" onSubmit={this.handleSubmit}>
             {/* Starting Location Input */}
             <div className="mb-3">
               <label htmlFor="startingLocationInput" className="form-label">
@@ -210,9 +211,7 @@ class QueryPage extends Component {
                   name="middleLocation[]"
                   placeholder="Enter middle location"
                   value={location}
-                  onChange={(e) =>
-                    this.handleMiddleLocationChange(index, e.target.value)
-                  }
+                  onChange={(e) => this.handleMiddleLocationChange(index, e.target.value)}
                 />
                 <button
                   type="button"
@@ -250,64 +249,64 @@ class QueryPage extends Component {
             </div>
             {/* Travel Date Input */}
             <div className="mb-3">
-              <div
+            <div
                 style={{ display: "flex", gap: "1rem", alignItems: "center" }}
               >
                 {/* Start Date Picker */}
                 <div>
-                  <label htmlFor="startDate" className="form-label">
+                <label htmlFor="startDate" className="form-label">
                     Start Date
-                  </label>
-                  <div className="input-group">
+                </label>
+                <div className="input-group">
                     <input
-                      type="date"
-                      id="startDate"
-                      name="startDate"
-                      value={this.state.startDate}
+                    type="date"
+                    id="startDate"
+                    name="startDate"
+                    value={this.state.startDate}
                     onChange={this.handleChange}
                     className="form-control"
-                      style={{ minWidth: "150px" }}
-                      min="2023-01-01"
-                      max="2030-12-31"
+                    style={{ minWidth: "150px" }}
+                    min="2023-01-01"
+                    max="2030-12-31"
                     />
-                  </div>
+                </div>
                 </div>
                 {/* End Date Picker */}
                 <div>
-                  <label htmlFor="endDate" className="form-label">
+                <label htmlFor="endDate" className="form-label">
                     End Date
-                  </label>
-                  <div className="input-group">
+                </label>
+                <div className="input-group">
                     <input
-                      type="date"
-                      id="endDate"
-                      name="endDate"
-                      value={this.state.endDate}
+                    type="date"
+                    id="endDate"
+                    name="endDate"
+                    value={this.state.endDate}
                     onChange={this.handleChange}
                     className="form-control"
-                      style={{ minWidth: "150px" }}
-                      min="2023-01-01"
-                      max="2030-12-31"
+                    style={{ minWidth: "150px" }}
+                    min="2023-01-01"
+                    max="2030-12-31"
                     />
-                  </div>
                 </div>
-              </div>
+                </div>
+            </div>
             </div>
             {/* Fix Order Checkbox */}
             <div className="input-container mb-3">
-              <div className="form-check">
+            <div className="form-check">
                 <input
-                  type="checkbox"
-                  className="form-check-input"
-                  id="fixOrderCheckbox"
-                  name="fixOrder"
+                type="checkbox"
+                className="form-check-input"
+                id="fixOrderCheckbox"
+                name="fixOrder"
                 value={this.state.fixOrder}
                 onChange={this.handleChange}
                 />
                 <label className="form-check-label" htmlFor="fixOrderCheckbox">
-                  Fixed Order
+                Fixed Order
                 </label>
-              </div>
+            </div>
             </div>
             {/* Triangle Graph Selector */}
             <div className="mb-3">
@@ -352,79 +351,77 @@ class QueryPage extends Component {
                 Generate Travel Plan
               </button>
             </div>
-          </form>
-          {/* Map Placeholder Section */}
-          <div className="mt-5">
+            </form>
+            {/* Map Placeholder Section */}
+            <div className="mt-5">
             {/* Map and Info Panel */}
             <div
               id="map"
               className="border mt-4"
               style={{ height: "300px", width: "100%" }}
             >
-              {/* Map Placeholder */}
-              Map will be displayed here
+                {/* Map Placeholder */}
+                Map will be displayed here
             </div>
             <div id="panel" className="mt-3">
-              {/* Directions/Info Panel Placeholder */}
-              Route info will be displayed here
+                {/* Directions/Info Panel Placeholder */}
+                Route info will be displayed here
             </div>
-          </div>
-          {/* Trending Section */}
-          <div className="container">
+            </div>
+            {/* Trending Section */}
+            <div className="container">
             <h2 className="text-center mb-4">Trending Destinations</h2>
             <div className="row">
-              {/* Card 1 */}
-              <div className="col-md-4">
+                {/* Card 1 */}
+                <div className="col-md-4">
                 <div className="card">
-                  <img
+                    <img
                     src="https://via.placeholder.com/300x200"
                     className="card-img-top"
                     alt="Destination 1"
-                  />
-                  <div className="card-body">
+                    />
+                    <div className="card-body">
                     <h5 className="card-title">Eco-Friendly Beaches</h5>
                     <p className="card-text">
-                      Explore the most sustainable and eco-friendly beaches in
-                      the world.
+                        Explore the most sustainable and eco-friendly beaches in the world.
                     </p>
-                  </div>
+                    </div>
                 </div>
-              </div>
-              {/* Card 2 */}
-              <div className="col-md-4">
+                </div>
+                {/* Card 2 */}
+                <div className="col-md-4">
                 <div className="card">
-                  <img
+                    <img
                     src="https://via.placeholder.com/300x200"
                     className="card-img-top"
                     alt="Destination 2"
-                  />
-                  <div className="card-body">
+                    />
+                    <div className="card-body">
                     <h5 className="card-title">Green Cities</h5>
                     <p className="card-text">
-                      Visit cities that prioritize sustainability and green
-                      living.
+                        Visit cities that prioritize sustainability and green living.
                     </p>
-                  </div>
+                    </div>
                 </div>
-              </div>
-              {/* Card 3 */}
-              <div className="col-md-4">
+                </div>
+                {/* Card 3 */}
+                <div className="col-md-4">
                 <div className="card">
-                  <img
+                    <img
                     src="https://via.placeholder.com/300x200"
                     className="card-img-top"
                     alt="Destination 3"
-                  />
-                  <div className="card-body">
+                    />
+                    <div className="card-body">
                     <h5 className="card-title">Eco Resorts</h5>
                     <p className="card-text">
-                      Discover luxurious resorts committed to sustainability.
+                        Discover luxurious resorts committed to sustainability.
                     </p>
-                  </div>
+                    </div>
                 </div>
-              </div>
+                </div>
             </div>
-          </div>
+            </div>
         </div>
         {/* Footer */}
         <footer className="custom-footer bg-light mt-5">
