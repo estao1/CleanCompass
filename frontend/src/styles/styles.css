@@ -1,0 +1,95 @@
+/* Import the Lora font from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&display=swap');
+
+/* Apply the Lora font globally to the body
+body {
+  font-family: 'Lora', serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+} */
+
+/* Style for all headings to use the Lora font */
+h1{
+  font-family: 'Merriweather', serif;
+  font-weight: 700; /* You can adjust the font weight as needed */
+}
+
+/* Example: Custom style for the main heading */
+h1 {
+  font-size: 2.5rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #333; /* Adjust color to match your theme */
+}
+
+/* Style for buttons */
+button {
+  font-family: 'Lora', serif;
+  font-size: 1rem;
+  font-weight: 400;
+  color: rgb(160, 24, 24);
+  background-color: #198754; /* Adjust to match your theme */
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #198754; /* Darker green for hover effect */
+}
+
+.website-title {
+    color: #198754; /* Green color */
+    font-size: 2rem; /* Larger font size */
+    font-weight: bold; /* Bold text */
+    margin: 0; /* Remove default margin */
+  }
+
+/* Footer Styles */
+.custom-footer {
+    padding: 1rem 1rem; /* Increased padding */
+    min-height: 300px; /* Set a larger minimum height */
+    display: flex;
+    align-items: flex-end;
+    background-color: #f8f9fa; /* Light background color */
+    border-top: 1px solid #dee2e6; /* Border at the top */
+  }
+  
+  .custom-footer h5 {
+    font-size: 1.25rem; /* Slightly larger headings */
+    margin-bottom: 1rem;
+    color: #333;
+  }
+  
+  .custom-footer ul {
+    padding: 0;
+    list-style: none;
+  }
+  
+  .custom-footer .footer-link {
+    color: #198754; /* Green link color */
+    text-decoration: none;
+  }
+  
+  .custom-footer .footer-link:hover {
+    text-decoration: underline; /* Underline on hover */
+  }
+  
+  .custom-footer .footer-social {
+    font-size: 1.5rem;
+    color: #333; /* Neutral color */
+  }
+  
+  .custom-footer .footer-social:hover {
+    color: #198754; /* Highlight on hover */
+  }
+  
+  /* Center text on smaller screens */
+  .custom-footer .text-center p {
+    margin: 0;
+  }
+  
+  
