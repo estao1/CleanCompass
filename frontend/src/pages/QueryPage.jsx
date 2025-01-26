@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import axios from "axios";
 
 
 class QueryPage extends Component {
@@ -6,6 +7,13 @@ class QueryPage extends Component {
     super(props);
     this.state = {
       middleLocations: [],
+      startingLocation: "",
+      endingLocation: "",
+      startDate: "",
+      endDate: "",
+      fixOrder: false,
+      additionalRequests: "",
+      serverResponse: null
     };
   }
 
@@ -31,8 +39,61 @@ class QueryPage extends Component {
     });
   };
 
+  handleChange = (event) => {
+    const { name, type, checked, value } = event.target;
+  
+    if (type === "checkbox") {
+      this.setState({ [name]: checked });
+    } else {
+      this.setState({ [name]: value });
+    }
+  };
+
+  handleSubmit = async (event) => {
+    event.preventDefault(); // Stop the full page reload
+
+
+    const {
+      startingLocation,
+      endingLocation,
+      middleLocations,
+      startDate,
+      endDate,
+      fixOrder,
+      additionalRequests
+    } = this.state;
+
+    try {
+      const response = await axios.post("http://127.0.0.1:5000/plan_trip", {
+        startingLocation,
+        endingLocation,
+        middleLocations,
+        startDate,
+        endDate,
+        fixOrder,
+        additionalRequests
+      });
+
+      console.log("Response from server:", response.data);
+
+      // Store Flask's response in state so we can show it in render()
+      this.setState({ serverResponse: response.data });
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    }
+  };
+
   render() {
-    const { middleLocations } = this.state;
+    const { 
+      middleLocations,
+      startingLocation,
+      endingLocation,
+      startDate,
+      endDate,
+      fixOrder,
+      additionalRequests,
+      serverResponse
+    } = this.state;
 
     return (
       <>
@@ -77,7 +138,7 @@ class QueryPage extends Component {
         {/* Main Content */}
         <div className="container">
           <h1 className="text-center mb-4">Plan Your Sustainable Trip</h1>
-          <form method="post">
+          <form method="POST" onSubmit={this.handleSubmit}>
             {/* Starting Location Input */}
             <div className="mb-3">
               <label htmlFor="startingLocationInput" className="form-label">
@@ -89,6 +150,8 @@ class QueryPage extends Component {
                 id="startingLocationInput"
                 name="startingLocation"
                 placeholder="Enter your starting location"
+                value={this.state.startingLocation}
+                onChange={this.handleChange}
               />
             </div>
             {/* Middle Locations */}
@@ -135,6 +198,8 @@ class QueryPage extends Component {
                 className="form-control"
                 id="endingLocationInput"
                 name="endingLocation"
+                value={this.state.endingLocation}
+                onChange={this.handleChange}
                 placeholder="Enter your ending location"
               />
             </div>
@@ -151,6 +216,8 @@ class QueryPage extends Component {
                     type="date"
                     id="startDate"
                     name="startDate"
+                    value={this.state.startDate}
+                    onChange={this.handleChange}
                     className="form-control"
                     style={{ minWidth: "150px" }}
                     min="2023-01-01"
@@ -168,6 +235,8 @@ class QueryPage extends Component {
                     type="date"
                     id="endDate"
                     name="endDate"
+                    value={this.state.endDate}
+                    onChange={this.handleChange}
                     className="form-control"
                     style={{ minWidth: "150px" }}
                     min="2023-01-01"
@@ -185,6 +254,8 @@ class QueryPage extends Component {
                 className="form-check-input"
                 id="fixOrderCheckbox"
                 name="fixOrder"
+                value={this.state.fixOrder}
+                onChange={this.handleChange}
                 />
                 <label className="form-check-label" htmlFor="fixOrderCheckbox">
                 Fixed Order
@@ -224,6 +295,8 @@ class QueryPage extends Component {
                 name="additionalRequests"
                 rows="3"
                 placeholder="Enter any additional requests..."
+                value={this.state.additionalRequests}
+                onChange={this.handleChange}
               ></textarea>
             </div>
             {/* Submit Button */}
