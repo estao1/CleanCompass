@@ -1,36 +1,34 @@
 import json
-from gemini import process_query_from_frontend
+from gemini import process_gemini_query
 
-def send_query_to_gemini():
+def send_query_to_gemini(data):
     """
     Simulates sending a query collected from the frontend to the Gemini API.
     """
-    # Simulated frontend input
     query_data = {
-        "starting_location": "Verano Place Housing, 6529 Adobe Cir S, Irvine, CA 92617",
-        "ending_location": "University of California, Irvine, 401 E Peltason Dr #2000, Irvine, CA 92697",  # Defaults to starting_location if not provided
-        "middle_locations": [],
-        "fixed_order": False,  # Middle locations can be reordered
+        "starting_location": data.get("startingLocation"),
+        "ending_location": data.get("endingLocation"),
+        "middle_locations": data.get("middleLocations", []),
+        "fixed_order": data.get("fixOrder"),
         "preferences": {
-            "carbon_emissions": 0.5,  # 50% weight on reducing carbon emissions
-            "time": 0,              # 30% weight on saving time
-            "cost": 0.5               # 20% weight on saving cost
+            "carbon_emissions": 1,
+            "time": 0,
+            "cost": 0,
         },
         "travel_dates": {
-            "start_date": "03/10/2025",
-            "end_date": "03/11/2025"
+            "start_date": data.get("startDate"),
+            "end_date": data.get("endDate"),
         },
-        "additional_requests": ""
+        "additional_requests": data.get("additionalRequests")
     }
 
     # Send the query and process the response
     try:
-        response = process_query_from_frontend(query_data)
-
+        response = process_gemini_query(query_data)
+        result = json.dumps(response, indent=2)
         # Format the response for readability
-        print("Returned Response:", json.dumps(response, indent=2))
+        print("Returned Response:", result)
+        return result
+
     except Exception as e:
         print(json.dumps({"error": str(e)}, indent=2))
-
-if __name__ == "__main__":
-    send_query_to_gemini()
