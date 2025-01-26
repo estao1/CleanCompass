@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-
+import { buildMultiLegRoute } from "../static/scripts/map";
 
 class QueryPage extends Component {
   constructor(props) {
@@ -30,6 +30,36 @@ class QueryPage extends Component {
       return { middleLocations: updatedLocations };
     });
   };
+
+  componentDidMount() {
+    // Call plotRoutes after the component is mounted
+     if (window.google) {
+      // 1) Create a Google Map instance
+      const googleMap = new window.google.maps.Map(document.getElementById("map"), {
+        center: { lat: 39.5, lng: -98.35 },
+        zoom: 4,
+      });
+
+      // 2) Build your stops array
+      const stops = [
+        { location: "Austin, TX", mode: "DRIVING" },
+        { location: "Dallas, TX", mode: "FLIGHT" },
+        { location: "Los Angeles, CA", mode: "DRIVING" },
+      ];
+
+      // 3) Call buildMultiLegRoute directly!
+      buildMultiLegRoute(
+        googleMap,
+        document.getElementById("panel"),
+        stops,
+        0.5 // alpha factor
+      )
+        .then(() => console.log("Routes built!"))
+        .catch((err) => console.error(err));
+    } else {
+      console.error("Google Maps not loaded yet.");
+    }
+  }
 
   render() {
     const { middleLocations } = this.state;
