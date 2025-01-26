@@ -50,7 +50,7 @@ def process_openai_query(data):
         f"- Additional Requests: {additional_requests}\n"
         f"Important Requirements:\n"
         f"1. All locations (starting, middle, ending) must appear in the route.\n"
-        f"2. Only use these modes of transportation: TRANSIT, WALKING, DRIVING, FLIGHT, BICYCLING.\n"
+        f"2. Only use these modes of transportation: WALKING, DRIVING, FLIGHT, BICYCLING.\n"
         f"3. Optimize the route for the specified preferences (carbon emissions, time, cost).\n"
         f"4. If fixed_order is True, maintain the input order of locations. If False, reorder the middle locations for optimal travel.\n"
         f"5. Return the result in this JSON format with NO extra information or text, no exceptions:\n\n"
@@ -64,7 +64,11 @@ def process_openai_query(data):
         f"    ...\n"
         f"  }}\n"
         f"}}\n\n"
-        f"- The mode of transportation for the last location must be an empty string.\n"
+        f"6. The mode of transportation for the last location must be an empty string.\n"
+        f"7. If the mode of transportation is WALKING and the distance is over 1.5 miles, the mode MUST be BICYCLING.\n"
+        f"8. If the mode of transportation is BICYCLING and the distance is over 3 miles, the mode MUST be DRIVING.\n"
+        f"9. If the mode of transportation is DRIVING and the distance is over 800 miles, the mode MUST be FLIGHT.\n"
+        f"10. If the mode of transportation is FLIGHT and the distance is under 400 miles, the mode MUST be DRIVING.\n"
     )
 
     # Interact with the OpenAI API
